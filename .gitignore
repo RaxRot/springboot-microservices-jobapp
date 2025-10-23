@@ -1,0 +1,24 @@
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+build/
+target/
+
+### Maven ###
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+/logs/
+**/target/
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### Environment ###
+.env
+*.log
+
+### Docker ###
+*.pid
+*.seed
