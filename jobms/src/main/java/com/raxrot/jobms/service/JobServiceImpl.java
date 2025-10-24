@@ -1,6 +1,8 @@
 package com.raxrot.jobms.service;
 
 
+import com.raxrot.jobms.client.CompanyClient;
+import com.raxrot.jobms.client.ReviewClient;
 import com.raxrot.jobms.exception.ApiException;
 import com.raxrot.jobms.external.Company;
 import com.raxrot.jobms.external.JobFullDTO;
@@ -8,10 +10,7 @@ import com.raxrot.jobms.external.Review;
 import com.raxrot.jobms.model.Job;
 import com.raxrot.jobms.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,6 +22,8 @@ import java.util.List;
 public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
     private final RestTemplate restTemplate;
+    private final CompanyClient companyClient;
+    private final ReviewClient reviewClient;
 
     @Override
     public Job createJob(Job job) {
@@ -55,13 +56,8 @@ public class JobServiceImpl implements JobService {
         JobFullDTO jobFullDTO = new JobFullDTO();
         jobFullDTO.setJob(job);
 
-        Company company = restTemplate.getForObject("http://COMPANY-SERVICE:8081/companies/"+job.getCompanyId(), Company.class);
-
-        ResponseEntity<List<Review>> reviews = restTemplate.exchange("http://REVIEW-SERVICE:8083/reviews?companyId=" + job.getCompanyId(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-
-                });
-        List<Review> reviewList = reviews.getBody();
+        Company company = companyClient.getCompany(job.getCompanyId());
+        List<Review> reviewList = reviewClient.getReviews(job.getCompanyId());
 
         jobFullDTO.setReview(reviewList);
         jobFullDTO.setCompany(company);
