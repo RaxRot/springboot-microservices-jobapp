@@ -1,6 +1,6 @@
 package com.raxrot.jobms.controller;
 
-import com.raxrot.jobms.external.JobWithCompanyDTO;
+import com.raxrot.jobms.external.JobFullDTO;
 import com.raxrot.jobms.model.Job;
 import com.raxrot.jobms.service.JobService;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +22,12 @@ public class JobController {
     }
 
     @GetMapping
-    public ResponseEntity<List<JobWithCompanyDTO>> getAllJobs() {
+    public ResponseEntity<List<JobFullDTO>> getAllJobs() {
         return ResponseEntity.ok(jobService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JobWithCompanyDTO> getJob(@PathVariable Long id) {
+    public ResponseEntity<JobFullDTO> getJob(@PathVariable Long id) {
         return ResponseEntity.ok(jobService.getJobById(id));
     }
 

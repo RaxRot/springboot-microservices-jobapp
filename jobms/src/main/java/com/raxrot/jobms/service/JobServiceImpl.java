@@ -3,11 +3,15 @@ package com.raxrot.jobms.service;
 
 import com.raxrot.jobms.exception.ApiException;
 import com.raxrot.jobms.external.Company;
-import com.raxrot.jobms.external.JobWithCompanyDTO;
+import com.raxrot.jobms.external.JobFullDTO;
+import com.raxrot.jobms.external.Review;
 import com.raxrot.jobms.model.Job;
 import com.raxrot.jobms.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,32 +30,42 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public List<JobWithCompanyDTO> findAll() {
+    public List<JobFullDTO> findAll() {
 
         List<Job> jobs = jobRepository.findAll();
-        List<JobWithCompanyDTO>jobWithCompanyDTOS = new ArrayList<>();
+        List<JobFullDTO> jobFullDTOS = new ArrayList<>();
 
 
         for (Job job : jobs) {
-            JobWithCompanyDTO jobWithCompanyDTO = new JobWithCompanyDTO();
-            jobWithCompanyDTO.setJob(job);
+            JobFullDTO jobFullDTO = new JobFullDTO();
+            jobFullDTO.setJob(job);
             Company company = restTemplate.getForObject("http://COMPANY-SERVICE:8081/companies/"+job.getCompanyId(), Company.class);
-            jobWithCompanyDTO.setCompany(company);
+            jobFullDTO.setCompany(company);
 
-            jobWithCompanyDTOS.add(jobWithCompanyDTO);
+            jobFullDTOS.add(jobFullDTO);
         }
-        return jobWithCompanyDTOS;
+        return jobFullDTOS;
     }
 
     @Override
-    public JobWithCompanyDTO getJobById(Long id) {
+    public JobFullDTO getJobById(Long id) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new ApiException("Job not found", HttpStatus.NOT_FOUND));
-        JobWithCompanyDTO jobWithCompanyDTO = new JobWithCompanyDTO();
-        jobWithCompanyDTO.setJob(job);
+
+        JobFullDTO jobFullDTO = new JobFullDTO();
+        jobFullDTO.setJob(job);
+
         Company company = restTemplate.getForObject("http://COMPANY-SERVICE:8081/companies/"+job.getCompanyId(), Company.class);
-        jobWithCompanyDTO.setCompany(company);
-        return jobWithCompanyDTO;
+
+        ResponseEntity<List<Review>> reviews = restTemplate.exchange("http://REVIEW-SERVICE:8083/reviews?companyId=" + job.getCompanyId(),
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+
+                });
+        List<Review> reviewList = reviews.getBody();
+
+        jobFullDTO.setReview(reviewList);
+        jobFullDTO.setCompany(company);
+        return jobFullDTO;
     }
 
     @Override
