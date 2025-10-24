@@ -2,12 +2,16 @@ package com.raxrot.jobms.service;
 
 
 import com.raxrot.jobms.exception.ApiException;
+import com.raxrot.jobms.external.Company;
+import com.raxrot.jobms.external.JobWithCompanyDTO;
 import com.raxrot.jobms.model.Job;
 import com.raxrot.jobms.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -21,8 +25,23 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public List<Job> findAll() {
-        return jobRepository.findAll();
+    public List<JobWithCompanyDTO> findAll() {
+
+        List<Job> jobs = jobRepository.findAll();
+        List<JobWithCompanyDTO>jobWithCompanyDTOS = new ArrayList<>();
+
+        //rest template
+        RestTemplate restTemplate = new RestTemplate();
+
+        for (Job job : jobs) {
+            JobWithCompanyDTO jobWithCompanyDTO = new JobWithCompanyDTO();
+            jobWithCompanyDTO.setJob(job);
+            Company company = restTemplate.getForObject("http://localhost:8081/companies/"+job.getCompanyId(), Company.class);
+            jobWithCompanyDTO.setCompany(company);
+
+            jobWithCompanyDTOS.add(jobWithCompanyDTO);
+        }
+        return jobWithCompanyDTOS;
     }
 
     @Override
