@@ -18,6 +18,7 @@ import java.util.List;
 @Service
 public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
+    private final RestTemplate restTemplate;
 
     @Override
     public Job createJob(Job job) {
@@ -30,13 +31,11 @@ public class JobServiceImpl implements JobService {
         List<Job> jobs = jobRepository.findAll();
         List<JobWithCompanyDTO>jobWithCompanyDTOS = new ArrayList<>();
 
-        //rest template
-        RestTemplate restTemplate = new RestTemplate();
 
         for (Job job : jobs) {
             JobWithCompanyDTO jobWithCompanyDTO = new JobWithCompanyDTO();
             jobWithCompanyDTO.setJob(job);
-            Company company = restTemplate.getForObject("http://localhost:8081/companies/"+job.getCompanyId(), Company.class);
+            Company company = restTemplate.getForObject("http://COMPANY-SERVICE:8081/companies/"+job.getCompanyId(), Company.class);
             jobWithCompanyDTO.setCompany(company);
 
             jobWithCompanyDTOS.add(jobWithCompanyDTO);
