@@ -44,10 +44,14 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public Job getJobById(Long id) {
+    public JobWithCompanyDTO getJobById(Long id) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new ApiException("Job not found", HttpStatus.NOT_FOUND));
-        return job;
+        JobWithCompanyDTO jobWithCompanyDTO = new JobWithCompanyDTO();
+        jobWithCompanyDTO.setJob(job);
+        Company company = restTemplate.getForObject("http://COMPANY-SERVICE:8081/companies/"+job.getCompanyId(), Company.class);
+        jobWithCompanyDTO.setCompany(company);
+        return jobWithCompanyDTO;
     }
 
     @Override
